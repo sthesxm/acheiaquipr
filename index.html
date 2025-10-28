@@ -257,7 +257,7 @@
     </div>
 
     <!-- CTA principal com setas e texto preto -->
-    <button id="ctaMain" class="cta-btn attn-halo">
+    <button id="ctaMain" class="cta-btn attn-halo" aria-label="Entrar grátis no grupo do WhatsApp">
       <span class="cta-icon left" aria-hidden="true">
         <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
           <path d="M8 4 L16 12 L8 20" />
@@ -313,7 +313,7 @@
 
   <div class="sticky-footer">
     <div>⏳ Últimas vagas de hoje</div>
-    <button id="ctaFooter" class="sticky-btn">Entrar no grupo</button>
+    <button id="ctaFooter" class="sticky-btn" aria-label="Entrar no grupo pelo rodapé">Entrar no grupo</button>
   </div>
 
   <!-- Script principal (UI + Lead dedupe + navegação) -->
@@ -326,7 +326,8 @@
     }
 
     function boot(){
-      const WHATS_LINK="https://sndflw.com/i/universoachadinhos"; // troque aqui se quiser
+      // 🔗 Troque aqui se quiser: use seu wa.me, link do grupo ou encurtador confiável
+      const WHATS_LINK="https://sndflw.com/i/universoachadinhos";
 
       const START_VACANCIES=24, MIN_VACANCIES=2;
       const feedEl=document.getElementById('feed');
@@ -403,19 +404,6 @@
         if(feedEl.children.length>3){ feedEl.removeChild(feedEl.lastChild); }
       }
 
-      // Reveal cards ao rolar
-      const io = new IntersectionObserver((entries)=>{
-        entries.forEach(e=>{
-          if(e.isIntersecting){
-            e.target.style.transition='transform .4s ease, opacity .4s ease';
-            e.target.style.transform='translateY(0)';
-            e.target.style.opacity='1';
-            io.unobserve(e.target);
-          }
-        });
-      },{threshold:0.12});
-      document.querySelectorAll('.benefit').forEach(b=> io.observe(b));
-
       /* ===== CLICK → LEAD (ANTI-DUP) ===== */
       const LEAD_LOCK_KEY = 'lead_lock_until';
       let leadFiredFlag = false;
@@ -440,19 +428,25 @@
         // dispara Lead apenas 1x
         trackLeadOnce();
 
+        // se o link estiver vazio, evita erro silencioso
+        if (!WHATS_LINK || typeof WHATS_LINK !== 'string') {
+          console.warn('WHATS_LINK não definido.');
+          return;
+        }
+
         const ua = navigator.userAgent || '';
         const isAndroid = /Android/i.test(ua);
         const isIOS     = /iPhone|iPad|iPod/i.test(ua);
 
+        // Estratégia: tentar link direto primeiro; fallback para app/web conforme plataforma
+        try { window.location.href = WHATS_LINK; } catch(e){}
+
         if (isAndroid) {
-          window.location.href = WHATS_LINK;
-          setTimeout(()=>{ window.location.href = 'intent://send/#Intent;scheme=whatsapp;package=com.whatsapp;end'; }, 200);
+          setTimeout(()=>{ try{ window.location.href = 'intent://send/#Intent;scheme=whatsapp;package=com.whatsapp;end'; }catch(e){} }, 200);
         } else if (isIOS) {
-          window.location.href = 'whatsapp://';
-          setTimeout(()=>{ window.location.href = WHATS_LINK; }, 200);
+          setTimeout(()=>{ try{ window.location.href = 'whatsapp://'; }catch(e){} }, 200);
         } else {
-          window.location.href = WHATS_LINK;
-          setTimeout(()=>{ window.location.href = 'https://web.whatsapp.com/'; }, 300);
+          setTimeout(()=>{ try{ window.location.href = 'https://web.whatsapp.com/'; }catch(e){} }, 300);
         }
       }
 
@@ -492,6 +486,3 @@
   </script>
 </body>
 </html>
-
-
-
