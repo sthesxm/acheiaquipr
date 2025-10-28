@@ -76,24 +76,18 @@
 
   <style>
     :root{
-      /* Header & botões (gradientes principais) */
       --grad-start:#64b2fd;   /* [GRADIENT_HEADER_START] */
       --grad-end:#1d5386;     /* [GRADIENT_HEADER_END]   */
 
-      /* CTA principal */
       --cta1-start:#ffd12e;   /* [GRADIENT_CTA_START]    */
       --cta1-end:#ffc20c;     /* [GRADIENT_CTA_END]      */
 
-      /* Barra de vagas (preenchimento) */
       --bar-fill:#ffc20c;     /* [BAR_SOLID_COLOR]       */
 
-      /* Texto predominante */
       --text-main:#ffffff;    /* [PRIMARY_TEXT_COLOR]    */
 
-      /* Rodapé fixo (opcional sólido) */
       --footer-bg:#ffc20c;    /* [FOOTER_BG]             */
 
-      /* Utils */
       --white:#ffffff; --gray:#555; --muted:#777;
       --shadow:0 10px 25px rgba(0,0,0,.1);
       --radius:18px;
@@ -122,7 +116,7 @@
     .bar>.fill::after{content:"";position:absolute; top:0; bottom:0; left:-40%; width:40%; background:linear-gradient(120deg, transparent 0%, rgba(255,255,255,.4) 50%, transparent 100%); transform:skewX(-20deg); animation:barSheen 2.2s linear infinite; pointer-events:none}
     @keyframes barSheen{from{left:-40%} to{left:110%}}
 
-    /* ========= Prova social (micro-trust) ========= */
+    /* Micro-trust */
     .micro-trust{
       font-size:13.5px;font-weight:700;color:#666;margin:10px 0;
       white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
@@ -140,7 +134,7 @@
       100%{box-shadow:0 0 0 0 rgba(31,191,117,0);}
     }
 
-    /* ========= CTA principal ========= */
+    /* CTA principal */
     .cta-btn{
       position:relative; overflow:hidden;
       display:inline-flex; align-items:center; justify-content:center; gap:10px;
@@ -154,7 +148,6 @@
     }
     .cta-btn:hover{ filter:brightness(1.06); transform:scale(1.02) }
 
-    /* Shine do CTA */
     .cta-btn::after{
       content:"";
       position:absolute; top:0; bottom:0; left:-25%;
@@ -166,7 +159,6 @@
     }
     @keyframes shine{ 0%,60%{left:-25%} 70%{left:110%} 100%{left:110%} }
 
-    /* Halo sutil no CTA */
     .cta-btn.attn-halo::before{
       content:"";
       position:absolute; inset:-4px; border-radius:999px;
@@ -181,16 +173,13 @@
       100%{opacity:0; transform:scale(1.08)}
     }
 
-    /* Setas “gordinhas” */
     .cta-icon{width:26px;height:26px;flex:0 0 26px;display:inline-flex;align-items:center;justify-content:center;filter: drop-shadow(0 0 6px rgba(255,255,255,.35))}
     .cta-icon svg{width:100%;height:100%}
     .cta-icon path{stroke:#fff;stroke-width:4.2;stroke-linecap:round;stroke-linejoin:round;fill:none}
     .cta-icon.left{ animation:arrowInLeft 1.5s ease-in-out infinite; }
     .cta-icon.right{ animation:arrowInRight 1.5s ease-in-out infinite; }
-    @keyframes arrowInLeft{ 0%,60%,100%{transform:translateX(0); opacity:1;} 70%{transform:translateX(4px); opacity:.95;} }
-    @keyframes arrowInRight{ 0%,60%,100%{transform:translateX(0); opacity:1;} 70%{transform:translateX(-4px); opacity:.95;} }
 
-    /* ✅ Texto preto apenas da frase central do CTA */
+    /* Texto preto do centro do CTA */
     #ctaMain > span:not(.cta-icon):not(.spinner){
       color:#000 !important;
     }
@@ -199,13 +188,8 @@
     .cta-btn.loading .spinner{display:inline-block}
     @keyframes spin{to{transform:rotate(360deg)}}
 
-    /* Linha de confiança */
     .trust-line{
-      font-size:12px;
-      color:#777;
-      margin-top:8px;
-      font-weight:600;
-      text-align:center;
+      font-size:12px;color:#777;margin-top:8px;font-weight:600;text-align:center;
     }
 
     /* Feed / Notificações */
@@ -214,8 +198,24 @@
     .notif .badge{background:rgba(46,204,113,.15);border:1px solid rgba(46,204,113,.3);color:#1e8e3e;font-weight:800;font-size:12px;padding:6px 8px;border-radius:999px}
     @keyframes slideDown{to{opacity:1;transform:translateY(0)}}
 
+    /* Benefícios — agora VISÍVEIS por padrão */
     .benefits{max-width:700px;margin:6px auto;padding:0 12px}
-    .benefit{display:flex;align-items:center;gap:12px;background:rgba(100,178,253,0.08);border-radius:14px;padding:12px;margin-bottom:12px;border:1px solid var(--grad-start);box-shadow:0 4px 10px rgba(0,0,0,0.05);transform:translateY(10px); opacity:0}
+    .benefit{
+      display:flex;align-items:center;gap:12px;background:rgba(100,178,253,0.08);
+      border-radius:14px;padding:12px;margin-bottom:12px;border:1px solid var(--grad-start);
+      box-shadow:0 4px 10px rgba(0,0,0,0.05);
+      /* visíveis por padrão */
+      transform:none; opacity:1;
+    }
+    /* anima apenas se o JS adicionar .reveal */
+    .benefit.reveal{
+      transform:translateY(10px); opacity:0;
+      transition:transform .4s ease, opacity .4s ease;
+    }
+    .benefit.reveal.show{
+      transform:translateY(0); opacity:1;
+    }
+
     .emojibox{width:42px;height:42px;min-width:42px;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,var(--grad-start),var(--grad-end));border-radius:10px;font-size:20px;color:#fff}
     .benefit-text h4{font-size:16px;font-weight:800;margin-bottom:2px}
     .benefit-text p{font-size:13.5px;color:#777;margin:0}
@@ -256,7 +256,7 @@
       <span class="live-dot"></span> <strong>+7.500 membros</strong> · <strong>🎯 1 clique</strong> · <strong>🚫 Sem spam</strong>
     </div>
 
-    <!-- CTA principal com setas e texto preto -->
+    <!-- CTA principal -->
     <button id="ctaMain" class="cta-btn attn-halo" aria-label="Entrar grátis no grupo do WhatsApp">
       <span class="cta-icon left" aria-hidden="true">
         <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
@@ -281,34 +281,10 @@
   </section>
 
   <section class="benefits">
-    <div class="benefit">
-      <div class="emojibox">🔥</div>
-      <div class="benefit-text">
-        <h4>Descontos Insanos</h4>
-        <p>Produtos com até 70% OFF</p>
-      </div>
-    </div>
-    <div class="benefit">
-      <div class="emojibox">🎟</div>
-      <div class="benefit-text">
-        <h4>Cupons Exclusivos</h4>
-        <p>Só para membros do grupo</p>
-      </div>
-    </div>
-    <div class="benefit">
-      <div class="emojibox">👀</div>
-      <div class="benefit-text">
-        <h4>Itens em Alta</h4>
-        <p>Os mais desejados do momento</p>
-      </div>
-    </div>
-    <div class="benefit">
-      <div class="emojibox">✅</div>
-      <div class="benefit-text">
-        <h4>Ofertas Verificadas</h4>
-        <p>Promoções reais e testadas</p>
-      </div>
-    </div>
+    <div class="benefit"><div class="emojibox">🔥</div><div class="benefit-text"><h4>Descontos Insanos</h4><p>Produtos com até 70% OFF</p></div></div>
+    <div class="benefit"><div class="emojibox">🎟</div><div class="benefit-text"><h4>Cupons Exclusivos</h4><p>Só para membros do grupo</p></div></div>
+    <div class="benefit"><div class="emojibox">👀</div><div class="benefit-text"><h4>Itens em Alta</h4><p>Os mais desejados do momento</p></div></div>
+    <div class="benefit"><div class="emojibox">✅</div><div class="benefit-text"><h4>Ofertas Verificadas</h4><p>Promoções reais e testadas</p></div></div>
   </section>
 
   <div class="sticky-footer">
@@ -326,8 +302,7 @@
     }
 
     function boot(){
-      // 🔗 Troque aqui se quiser: use seu wa.me, link do grupo ou encurtador confiável
-      const WHATS_LINK="https://sndflw.com/i/universoachadinhos";
+      const WHATS_LINK="https://sndflw.com/i/universoachadinhos"; // troque pelo seu link final
 
       const START_VACANCIES=24, MIN_VACANCIES=2;
       const feedEl=document.getElementById('feed');
@@ -381,6 +356,25 @@
         const pct=Math.max(0,Math.min(1,filled));
         fillBar.style.inset=`0 ${(1-pct)*100}% 0 0`;
       }
+
+      function pushNotification(name){
+        if(!feedEl) return;
+        const row=document.createElement('div');
+        row.className='notif';
+        row.innerHTML=`<div class="badge">✅</div><div><strong>${name}</strong> entrou no grupo</div>`;
+        if(feedEl.firstChild){ feedEl.insertBefore(row,feedEl.firstChild); }
+        else{ feedEl.appendChild(row); }
+        if(feedEl.children.length>3){ feedEl.removeChild(feedEl.lastChild); }
+      }
+
+      // 🔹 Seed inicial para o feed (garante que apareça algo)
+      (function seedFeed(count){
+        for(let i=0;i<count;i++){
+          if(namesQueue.length===0) namesQueue=shuffle([...NAMES_POOL]);
+          pushNotification(namesQueue.shift());
+        }
+      })(3);
+
       function step(){
         if(currentVacancies<=MIN_VACANCIES) return;
         if(namesQueue.length===0) namesQueue=shuffle([...NAMES_POOL]);
@@ -394,15 +388,20 @@
           setTimeout(step,nextMs);
         }
       }
-      function pushNotification(name){
-        if(!feedEl) return;
-        const row=document.createElement('div');
-        row.className='notif';
-        row.innerHTML=`<div class="badge">✅</div><div><strong>${name}</strong> entrou no grupo</div>`;
-        if(feedEl.firstChild){ feedEl.insertBefore(row,feedEl.firstChild); }
-        else{ feedEl.appendChild(row); }
-        if(feedEl.children.length>3){ feedEl.removeChild(feedEl.lastChild); }
-      }
+
+      // Benefícios: animação opcional (sem esconder por padrão)
+      const io = new IntersectionObserver((entries)=>{
+        entries.forEach(e=>{
+          if(e.isIntersecting){
+            e.target.classList.add('show');
+            io.unobserve(e.target);
+          }
+        });
+      },{threshold:0.12});
+      document.querySelectorAll('.benefit').forEach(b=>{
+        b.classList.add('reveal'); // prepara transição
+        io.observe(b);
+      });
 
       /* ===== CLICK → LEAD (ANTI-DUP) ===== */
       const LEAD_LOCK_KEY = 'lead_lock_until';
@@ -425,10 +424,8 @@
       }
 
       function openWhatsAppSmart(){
-        // dispara Lead apenas 1x
         trackLeadOnce();
 
-        // se o link estiver vazio, evita erro silencioso
         if (!WHATS_LINK || typeof WHATS_LINK !== 'string') {
           console.warn('WHATS_LINK não definido.');
           return;
@@ -438,7 +435,6 @@
         const isAndroid = /Android/i.test(ua);
         const isIOS     = /iPhone|iPad|iPod/i.test(ua);
 
-        // Estratégia: tentar link direto primeiro; fallback para app/web conforme plataforma
         try { window.location.href = WHATS_LINK; } catch(e){}
 
         if (isAndroid) {
@@ -452,7 +448,7 @@
 
       function handleClick(e){
         const btn = e.currentTarget;
-        if (btn.dataset.clicked === '1') return; // anti duplo clique real
+        if (btn.dataset.clicked === '1') return;
         btn.dataset.clicked = '1';
 
         btn.classList.add('loading');
@@ -474,10 +470,12 @@
 
       // UI inicial
       updateVacancyUI();
+
+      // Dispara a dinâmica automática (a partir de 1s)
       if(currentVacancies>MIN_VACANCIES){ setTimeout(step,1000); }
     }
 
-    // Garante DOM pronto
+    // Dom pronto
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', boot, { once:true });
     } else {
