@@ -76,18 +76,24 @@
 
   <style>
     :root{
+      /* Header & botões (gradientes principais) */
       --grad-start:#64b2fd;   /* [GRADIENT_HEADER_START] */
       --grad-end:#1d5386;     /* [GRADIENT_HEADER_END]   */
 
+      /* CTA principal */
       --cta1-start:#ffd12e;   /* [GRADIENT_CTA_START]    */
       --cta1-end:#ffc20c;     /* [GRADIENT_CTA_END]      */
 
+      /* Barra de vagas (preenchimento) */
       --bar-fill:#ffc20c;     /* [BAR_SOLID_COLOR]       */
 
+      /* Texto predominante */
       --text-main:#ffffff;    /* [PRIMARY_TEXT_COLOR]    */
 
+      /* Rodapé fixo (opcional sólido) */
       --footer-bg:#ffc20c;    /* [FOOTER_BG]             */
 
+      /* Utils */
       --white:#ffffff; --gray:#555; --muted:#777;
       --shadow:0 10px 25px rgba(0,0,0,.1);
       --radius:18px;
@@ -116,7 +122,7 @@
     .bar>.fill::after{content:"";position:absolute; top:0; bottom:0; left:-40%; width:40%; background:linear-gradient(120deg, transparent 0%, rgba(255,255,255,.4) 50%, transparent 100%); transform:skewX(-20deg); animation:barSheen 2.2s linear infinite; pointer-events:none}
     @keyframes barSheen{from{left:-40%} to{left:110%}}
 
-    /* Micro-trust */
+    /* ========= Prova social ========= */
     .micro-trust{
       font-size:13.5px;font-weight:700;color:#666;margin:10px 0;
       white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
@@ -134,7 +140,7 @@
       100%{box-shadow:0 0 0 0 rgba(31,191,117,0);}
     }
 
-    /* CTA principal */
+    /* ========= CTA ========= */
     .cta-btn{
       position:relative; overflow:hidden;
       display:inline-flex; align-items:center; justify-content:center; gap:10px;
@@ -189,7 +195,7 @@
     @keyframes spin{to{transform:rotate(360deg)}}
 
     .trust-line{
-      font-size:12px;color:#777;margin-top:8px;font-weight:600;text-align:center;
+      font-size:12px; color:#777; margin-top:8px; font-weight:600; text-align:center;
     }
 
     /* Feed / Notificações */
@@ -198,23 +204,16 @@
     .notif .badge{background:rgba(46,204,113,.15);border:1px solid rgba(46,204,113,.3);color:#1e8e3e;font-weight:800;font-size:12px;padding:6px 8px;border-radius:999px}
     @keyframes slideDown{to{opacity:1;transform:translateY(0)}}
 
-    /* Benefícios — agora VISÍVEIS por padrão */
+    /* Benefícios — visíveis por padrão com animação opcional */
     .benefits{max-width:700px;margin:6px auto;padding:0 12px}
     .benefit{
       display:flex;align-items:center;gap:12px;background:rgba(100,178,253,0.08);
       border-radius:14px;padding:12px;margin-bottom:12px;border:1px solid var(--grad-start);
       box-shadow:0 4px 10px rgba(0,0,0,0.05);
-      /* visíveis por padrão */
       transform:none; opacity:1;
     }
-    /* anima apenas se o JS adicionar .reveal */
-    .benefit.reveal{
-      transform:translateY(10px); opacity:0;
-      transition:transform .4s ease, opacity .4s ease;
-    }
-    .benefit.reveal.show{
-      transform:translateY(0); opacity:1;
-    }
+    .benefit.reveal{ transform:translateY(10px); opacity:0; transition:transform .4s ease, opacity .4s ease; }
+    .benefit.reveal.show{ transform:translateY(0); opacity:1; }
 
     .emojibox{width:42px;height:42px;min-width:42px;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,var(--grad-start),var(--grad-end));border-radius:10px;font-size:20px;color:#fff}
     .benefit-text h4{font-size:16px;font-weight:800;margin-bottom:2px}
@@ -251,27 +250,14 @@
       <div class="bar"><div class="fill" id="fillBar"></div></div>
     </div>
 
-    <!-- Prova social acima do botão -->
     <div class="micro-trust">
       <span class="live-dot"></span> <strong>+7.500 membros</strong> · <strong>🎯 1 clique</strong> · <strong>🚫 Sem spam</strong>
     </div>
 
-    <!-- CTA principal -->
     <button id="ctaMain" class="cta-btn attn-halo" aria-label="Entrar grátis no grupo do WhatsApp">
-      <span class="cta-icon left" aria-hidden="true">
-        <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-          <path d="M8 4 L16 12 L8 20" />
-        </svg>
-      </span>
-
+      <span class="cta-icon left" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 4 L16 12 L8 20" /></svg></span>
       <span>ENTRAR GRÁTIS NO GRUPO</span>
-
-      <span class="cta-icon right" aria-hidden="true">
-        <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-          <path d="M16 4 L8 12 L16 20" />
-        </svg>
-      </span>
-
+      <span class="cta-icon right" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 4 L8 12 L16 20" /></svg></span>
       <span class="spinner" aria-hidden="true"></span>
     </button>
 
@@ -292,6 +278,9 @@
     <button id="ctaFooter" class="sticky-btn" aria-label="Entrar no grupo pelo rodapé">Entrar no grupo</button>
   </div>
 
+  <!-- âncora oculta para fallback de navegação -->
+  <a id="navFallback" href="https://sndflw.com/i/acheiaquipromo" style="position:absolute;left:-9999px;top:-9999px" tabindex="-1" aria-hidden="true">.</a>
+
   <!-- Script principal (UI + Lead dedupe + navegação) -->
   <script>
     function uuidv4(){
@@ -302,7 +291,8 @@
     }
 
     function boot(){
-      const WHATS_LINK="https://sndflw.com/i/universoachadinhos"; // troque pelo seu link final
+      // ✅ Link do SendFlow informado por você
+      const WHATS_LINK = "https://sndflw.com/i/acheiaquipromo";
 
       const START_VACANCIES=24, MIN_VACANCIES=2;
       const feedEl=document.getElementById('feed');
@@ -367,7 +357,7 @@
         if(feedEl.children.length>3){ feedEl.removeChild(feedEl.lastChild); }
       }
 
-      // 🔹 Seed inicial para o feed (garante que apareça algo)
+      // seed inicial do feed
       (function seedFeed(count){
         for(let i=0;i<count;i++){
           if(namesQueue.length===0) namesQueue=shuffle([...NAMES_POOL]);
@@ -389,7 +379,7 @@
         }
       }
 
-      // Benefícios: animação opcional (sem esconder por padrão)
+      // animação opcional dos benefícios
       const io = new IntersectionObserver((entries)=>{
         entries.forEach(e=>{
           if(e.isIntersecting){
@@ -399,11 +389,11 @@
         });
       },{threshold:0.12});
       document.querySelectorAll('.benefit').forEach(b=>{
-        b.classList.add('reveal'); // prepara transição
+        b.classList.add('reveal');
         io.observe(b);
       });
 
-      /* ===== CLICK → LEAD (ANTI-DUP) ===== */
+      /* ===== CLICK → LEAD + navegação ===== */
       const LEAD_LOCK_KEY = 'lead_lock_until';
       let leadFiredFlag = false;
       function canFireLead(){
@@ -423,26 +413,33 @@
         return eventId;
       }
 
+      function navigateToLink(url){
+        // tentativa direta
+        try{ window.location.href = url; }catch(e){}
+        // fallback: clica numa âncora real (alguns navegadores preferem navegação por <a>)
+        const a = document.getElementById('navFallback');
+        if (a) {
+          a.href = url;
+          a.click();
+        }
+      }
+
       function openWhatsAppSmart(){
         trackLeadOnce();
-
-        if (!WHATS_LINK || typeof WHATS_LINK !== 'string') {
-          console.warn('WHATS_LINK não definido.');
-          return;
-        }
+        if (!WHATS_LINK) return;
 
         const ua = navigator.userAgent || '';
         const isAndroid = /Android/i.test(ua);
         const isIOS     = /iPhone|iPad|iPod/i.test(ua);
 
-        try { window.location.href = WHATS_LINK; } catch(e){}
+        navigateToLink(WHATS_LINK);
 
         if (isAndroid) {
-          setTimeout(()=>{ try{ window.location.href = 'intent://send/#Intent;scheme=whatsapp;package=com.whatsapp;end'; }catch(e){} }, 200);
+          setTimeout(()=>{ try{ navigateToLink('intent://send/#Intent;scheme=whatsapp;package=com.whatsapp;end'); }catch(e){} }, 200);
         } else if (isIOS) {
-          setTimeout(()=>{ try{ window.location.href = 'whatsapp://'; }catch(e){} }, 200);
+          setTimeout(()=>{ try{ navigateToLink('whatsapp://'); }catch(e){} }, 200);
         } else {
-          setTimeout(()=>{ try{ window.location.href = 'https://web.whatsapp.com/'; }catch(e){} }, 300);
+          setTimeout(()=>{ try{ navigateToLink('https://web.whatsapp.com/'); }catch(e){} }, 300);
         }
       }
 
@@ -470,12 +467,10 @@
 
       // UI inicial
       updateVacancyUI();
-
-      // Dispara a dinâmica automática (a partir de 1s)
       if(currentVacancies>MIN_VACANCIES){ setTimeout(step,1000); }
     }
 
-    // Dom pronto
+    // DOM pronto
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', boot, { once:true });
     } else {
