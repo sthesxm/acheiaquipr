@@ -249,6 +249,25 @@
     .benefit-text h4{font-size:16px;font-weight:800;margin-bottom:2px}
     .benefit-text p{font-size:13.5px;color:#777;margin:0}
 
+    /* ===== Vantagens extras (lista com emojis) ===== */
+    .advantages{max-width:820px;margin:6px auto 24px;padding:0 12px}
+    .advantages h3{font-size:18px;font-weight:900;margin:14px 0 10px;text-align:center}
+    .adv-list{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+      gap:10px;
+      list-style:none;
+      padding:0;
+    }
+    .adv-item{
+      display:flex;align-items:flex-start;gap:10px;
+      background:#fafafa;border:1px solid #eee;border-radius:14px;padding:12px;
+      box-shadow:0 4px 10px rgba(0,0,0,.03);
+    }
+    .adv-emoji{font-size:20px;line-height:1;min-width:24px}
+    .adv-text{font-size:13.5px;color:#555}
+    .adv-text strong{color:#222}
+
     .sticky-footer{
       position:fixed;bottom:0;left:0;right:0;background:var(--footer-bg);color:#000;
       padding:10px 14px;box-shadow:0 -8px 20px rgba(0,0,0,.2);
@@ -344,6 +363,37 @@
         <p>Promoções reais e testadas</p>
       </div>
     </div>
+  </section>
+
+  <!-- 🔽 Vantagens com emojis (extra) -->
+  <section class="advantages" aria-labelledby="vantagens-title">
+    <h3 id="vantagens-title">Por que entrar agora?</h3>
+    <ul class="adv-list">
+      <li class="adv-item">
+        <span class="adv-emoji">💥</span>
+        <div class="adv-text"><strong>Promo relâmpago</strong> antes de esgotar (vagas e cupons somem rápido).</div>
+      </li>
+      <li class="adv-item">
+        <span class="adv-emoji">🛒</span>
+        <div class="adv-text"><strong>Produtos de casa & cozinha</strong> todos os dias, selecionados à mão.</div>
+      </li>
+      <li class="adv-item">
+        <span class="adv-emoji">🚚</span>
+        <div class="adv-text"><strong>Frete com desconto</strong> quando rolar cupom/aplicativo parceiro.</div>
+      </li>
+      <li class="adv-item">
+        <span class="adv-emoji">⏱️</span>
+        <div class="adv-text"><strong>1 clique</strong> para pegar o link — nada de cadastro chato.</div>
+      </li>
+      <li class="adv-item">
+        <span class="adv-emoji">🧾</span>
+        <div class="adv-text"><strong>Ofertas verificadas</strong> e conferidas para evitar furada.</div>
+      </li>
+      <li class="adv-item">
+        <span class="adv-emoji">🛡️</span>
+        <div class="adv-text"><strong>Sem spam</strong> e com moderação ativa — ambiente leve.</div>
+      </li>
+    </ul>
   </section>
 
   <div class="sticky-footer">
