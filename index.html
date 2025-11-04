@@ -62,7 +62,10 @@
     function firePV(){
       if (sessionStorage.getItem(PV_KEY)) return;
       sessionStorage.setItem(PV_KEY, '1');
-      try { fbq('track','PageView',{ event_id: 'pv-' + cryptoRandomId() }); } catch(e){}
+      try {
+        // ✅ CORREÇÃO: eventID no 4º argumento
+        fbq('track','PageView', {}, { eventID: 'pv-' + cryptoRandomId() });
+      } catch(e){}
     }
 
     if (document.prerendering) {
@@ -175,7 +178,7 @@
       background:linear-gradient(120deg, transparent 0%, rgba(255,255,255,.45) 50%, transparent 100%);
       transform:skewX(-20deg);
       animation:shine 3.5s ease-in-out infinite;
-      pointer-events:none.
+      pointer-events:none;
     }
     @keyframes shine{
       0%,60%{left:-25%;}
@@ -466,13 +469,13 @@
         setLeadLock(30000);
         const eventId = 'lead-' + uuidv4();
         try {
-          // ✅ ajuste: evita duplicidade com o Lead do servidor (SendFlow)
+          // ✅ TROCA: em vez de 'Lead' (duplicava com o servidor), usamos custom:
           fbq('trackCustom','LeadClick', {});
         } catch(e){}
         return eventId;
       }
 
-      // Redireciona direto para o link (Lead no clique) — ALTERAÇÃO ÚNICA: micro-delay
+      // Redireciona direto para o link (evento no clique) — micro-delay
       function openWhatsAppSmart(){
         trackLeadOnce();
         setTimeout(function(){
