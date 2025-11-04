@@ -62,7 +62,10 @@
     function firePV(){
       if (sessionStorage.getItem(PV_KEY)) return;
       sessionStorage.setItem(PV_KEY, '1');
-      try { fbq('track','PageView',{ event_id: 'pv-' + cryptoRandomId() }); } catch(e){}
+      try {
+        // PageView com eventID (ok para dedupe caso use CAPI futuramente)
+        fbq('track','PageView', {}, { eventID: 'pv-' + cryptoRandomId() });
+      } catch(e){}
     }
 
     if (document.prerendering) {
@@ -348,7 +351,7 @@
     <button id="ctaFooter" class="sticky-btn" type="button">Entrar no grupo</button>
   </div>
 
-  <!-- Script principal (UI + Lead dedupe + navegação) -->
+  <!-- Script principal (UI + clique com evento) -->
   <script>
     function uuidv4(){
       return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
@@ -436,45 +439,14 @@
         if(feedEl.children.length>3){ feedEl.removeChild(feedEl.lastChild); }
       }
 
-      // Reveal ao rolar (benefícios)
-      const io = new IntersectionObserver((entries)=>{
-        entries.forEach(e=>{
-          if(e.isIntersecting){
-            e.target.style.transition='transform .4s ease, opacity .4s ease';
-            e.target.style.transform='translateY(0)';
-            e.target.style.opacity='1';
-            io.unobserve(e.target);
-          }
-        });
-      },{threshold:0.12});
-      document.querySelectorAll('.benefit').forEach(b=> io.observe(b));
-
-      /* ===== CLICK → LEAD (ANTI-DUP) ===== */
-      const LEAD_LOCK_KEY = 'lead_lock_until';
-      let leadFiredFlag = false;
-      function canFireLead(){
-        const now = Date.now();
-        const lockUntil = parseInt(sessionStorage.getItem(LEAD_LOCK_KEY) || '0', 10);
-        return (!leadFiredFlag) && (now > lockUntil);
-      }
-      function setLeadLock(ms=30000){
-        sessionStorage.setItem(LEAD_LOCK_KEY, String(Date.now() + ms));
-      }
-      function trackLeadOnce(){
-        if (!canFireLead()) return null;
-        leadFiredFlag = true;
-        setLeadLock(30000);
-        const eventId = 'lead-' + uuidv4();
-        try { fbq('track','Lead',{ event_id: eventId }); } catch(e){}
-        return eventId;
-      }
-
-      // Redireciona direto para o link (Lead no clique) — ALTERAÇÃO ÚNICA: micro-delay
-      function openWhatsAppSmart(){
-        trackLeadOnce();
-        setTimeout(function(){
-          window.location.assign(WHATS_LINK);
-        }, 180); // ~180ms dá tempo do Pixel enviar o Lead
+      // ==== CLICK → dispara evento de clique no Pixel e navega ====
+      function fireClickEvent(){
+        try {
+          // ✅ Evento custom sem duplicidade com o Lead do SendFlow
+          fbq('trackCustom','LeadClick',{});
+          // 👉 Se quiser o Lead padrão (pode gerar duplicidade com SendFlow), troque a linha acima por:
+          // fbq('track','Lead', {}); // ATENÇÃO: pode voltar o alerta de duplicação
+        } catch(e){}
       }
 
       function handleClick(e){
@@ -485,7 +457,12 @@
         btn.classList.add('loading');
         btn.setAttribute('disabled','true');
 
-        openWhatsAppSmart();
+        fireClickEvent();
+
+        // pequeno delay para envio do evento
+        setTimeout(function(){
+          window.location.assign(WHATS_LINK);
+        }, 180);
 
         setTimeout(()=>{
           btn.classList.remove('loading');
@@ -513,4 +490,3 @@
   </script>
 </body>
 </html>
-
