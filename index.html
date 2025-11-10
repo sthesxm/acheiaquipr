@@ -7,107 +7,78 @@
   <title>Achei Aqui PR 🛒 💛 | Entrar no Grupo</title>
   <link rel="preconnect" href="https://sndflw.com" crossorigin>
 
-  <!-- Meta Pixel (robusto: AM + PageView 1x + fallback) -->
-<script>
-  (function setupMetaPixel(){
-    var PIXEL_ID = '2707340819600297'; // <-- o teu ID
-    var USE_AUTO_CONFIG = false;       // true para habilitar autoConfig, false para manter como está
+  <!-- Meta Pixel (dedupe PageView 1x por sessão + Advanced Matching) -->
+  <script>
+  !function(f,b,e,v,n,t,s){
+    if(f.fbq) return;
+    n=f.fbq=function(){ n.callMethod? n.callMethod.apply(n,arguments):n.queue.push(arguments) };
+    if(!f._fbq) f._fbq=n;
+    n.push=n; n.loaded=!0; n.version='2.0';
+    n.queue=[];
+    t=b.createElement(e); t.async=!0; t.src=v;
+    s=b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t,s);
+  }(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
 
-    // ----- Loader padrão do Meta -----
-    !function(f,b,e,v,n,t,s){
-      if(f.fbq) return;
-      n=f.fbq=function(){ n.callMethod ? n.callMethod.apply(n,arguments) : n.queue.push(arguments) };
-      if(!f._fbq) f._fbq=n;
-      n.push=n; n.loaded=!0; n.version='2.0';
-      n.queue=[];
-      t=b.createElement(e); t.async=!0; t.src=v;
-      t.onload = function(){ console.debug('[Pixel] fbevents carregado'); };
-      t.onerror = function(){ console.warn('[Pixel] falha ao carregar fbevents.js'); };
-      s=b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t,s);
-    }(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
+  (function initPixelWithAdvancedMatching(){
+    // 🔁 PARAM: PIXEL
+    var PIXEL_ID = '2707340819600297'; // [PIXEL_ID]
 
-    // ----- Helpers -----
-    function safeGetLS(k){ try{ return localStorage.getItem(k)||''; }catch(_){ return ''; } }
-    function safeSetSS(k,v){ try{ sessionStorage.setItem(k,v); }catch(_){ } }
-    function safeGetSS(k){ try{ return sessionStorage.getItem(k)||''; }catch(_){ return ''; } }
     function getParamOrStorage(key, storageKey){
       var params = new URLSearchParams(location.search);
-      return params.get(key) || safeGetLS(storageKey || key) || '';
+      return params.get(key) || localStorage.getItem(storageKey || key) || '';
     }
     function normEmail(v){ return (v||'').toString().trim().toLowerCase(); }
     function normPhone(v){ return (v||'').toString().replace(/\D+/g,''); }
+
+    try{
+      var em = normEmail(getParamOrStorage('em','am_em'));
+      var ph = normPhone(getParamOrStorage('ph','am_ph'));
+
+      var advMatch = {};
+      if (em) advMatch.em = em;
+      if (ph) advMatch.ph = ph;
+
+      fbq('init', PIXEL_ID, advMatch);
+      fbq('set', 'autoConfig', false, PIXEL_ID);
+    }catch(e){
+      fbq('init', PIXEL_ID);
+      fbq('set', 'autoConfig', false, PIXEL_ID);
+    }
+  })();
+
+  (function sendPageViewOnce(){
+    var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+    var isBFCache = nav && nav.type === 'back_forward';
+    var PV_KEY = 'pv_sent:' + location.pathname + ':' + (new Date()).toDateString();
+
     function cryptoRandomId(){
       var a = (self.crypto||{}).getRandomValues ? crypto.getRandomValues(new Uint8Array(16)) : Array.from({length:16},()=>Math.random()*256|0);
-      a[6] = (a[6] & 0x0f) | 0x40; a[8] = (a[8] & 0x3f) | 0x80;
+      a[6] = (a[6] & 0x0f) | 0x40;
+      a[8] = (a[8] & 0x3f) | 0x80;
       var h = Array.from(a, b=>('0'+b.toString(16)).slice(-2)).join('');
       return h.slice(0,8)+'-'+h.slice(8,12)+'-'+h.slice(12,16)+'-'+h.slice(16,20)+'-'+h.slice(20);
     }
 
-    // ----- Init com Advanced Matching -----
-    (function initPixel(){
-      var em = normEmail(getParamOrStorage('em','am_em'));
-      var ph = normPhone(getParamOrStorage('ph','am_ph'));
-      var adv = {};
-      if (em) adv.em = em;
-      if (ph) adv.ph = ph;
+    function firePV(){
+      if (sessionStorage.getItem(PV_KEY)) return;
+      sessionStorage.setItem(PV_KEY, '1');
+      try {
+        // ✅ CORREÇÃO: eventID no 4º argumento
+        fbq('track','PageView', {}, { eventID: 'pv-' + cryptoRandomId() });
+      } catch(e){}
+    }
 
-      try{
-        if (Object.keys(adv).length){
-          fbq('init', PIXEL_ID, adv);
-          console.debug('[Pixel] init com AM', adv);
-        } else {
-          fbq('init', PIXEL_ID);
-          console.debug('[Pixel] init sem AM');
-        }
-      }catch(e){
-        // se por algum motivo deu erro, garante init "puro"
-        fbq('init', PIXEL_ID);
-        console.debug('[Pixel] init fallback sem AM');
-      }
-
-      // autoConfig on/off (alguns ambientes detectam melhor com true)
-      fbq('set', 'autoConfig', !!USE_AUTO_CONFIG, PIXEL_ID);
-    })();
-
-    // ----- PageView 1x por sessão/caminho (com eventID) -----
-    (function sendPageViewOnce(){
-      var PV_KEY = 'pv_sent:' + location.pathname + ':' + (new Date()).toDateString();
-      var already = safeGetSS(PV_KEY);
-      if (already) { console.debug('[Pixel] PageView já enviado nesta sessão'); return; }
-
-      var eventId = 'pv-' + cryptoRandomId();
-
-      function fire(){
-        try{
-          fbq('track','PageView', {}, { eventID: eventId });
-          console.debug('[Pixel] PageView enviado (fbq) | eventID=', eventId);
-          safeSetSS(PV_KEY, '1');
-        }catch(err){
-          console.warn('[Pixel] falha no fbq.track, usando fallback IMG');
-          // Fallback 1x: dispara via request de imagem (equivale ao noscript)
-          var i = new Image();
-          i.src = 'https://www.facebook.com/tr'
-            + '?id=' + encodeURIComponent(PIXEL_ID)
-            + '&ev=PageView&noscript=1'
-            + '&cd[eventID]=' + encodeURIComponent(eventId);
-          safeSetSS(PV_KEY, '1');
-        }
-      }
-
-      if (document.prerendering) {
-        document.addEventListener('prerenderingchange', function(){ fire(); }, { once:true });
-      } else {
-        // dá um micro respiro pro fbevents inicializar
-        (window.requestIdleCallback || setTimeout)(fire, 50);
-      }
-    })();
+    if (document.prerendering) {
+      document.addEventListener('prerenderingchange', function(){
+        if (!isBFCache) firePV();
+      }, { once:true });
+    } else {
+      if (!isBFCache) firePV();
+    }
   })();
-</script>
-<noscript>
-  <img height="1" width="1" style="display:none"
-       src="https://www.facebook.com/tr?id=2707340819600297&ev=PageView&noscript=1"/>
-</noscript>
-<!-- End Meta Pixel -->
+  </script>
+  <!-- End Meta Pixel -->
+
   <style>
     :root{
       /* 🔁 PARAMS DE CORES (troque por cliente) */
