@@ -7,11 +7,19 @@
   <title>Achei Aqui PR 🛒 💛 | Entrar no Grupo</title>
   <link rel="preconnect" href="https://sndflw.com" crossorigin>
 
-  <!-- Meta Pixel (dedupe PageView 1x por sessão + Advanced Matching) -->
-  <script>
+ <!-- Meta Pixel (AM + PV 1x + ID sanitizado + fallback) -->
+<script>
+(function(){
+  // ✅ COLOQUE AQUI O ID COMO VEIO DA BM (mesmo se vier com espaço)
+  var RAW_PIXEL_ID = '2707340819600297'; // <- seu novo ID
+
+  // 🔒 Sanitiza para apenas dígitos (evita espaços/zero-width/etc.)
+  var PIXEL_ID = (RAW_PIXEL_ID + '').replace(/[^\d]/g, '');
+
+  // Loader oficial do Meta
   !function(f,b,e,v,n,t,s){
     if(f.fbq) return;
-    n=f.fbq=function(){ n.callMethod? n.callMethod.apply(n,arguments):n.queue.push(arguments) };
+    n=f.fbq=function(){ n.callMethod ? n.callMethod.apply(n,arguments) : n.queue.push(arguments) };
     if(!f._fbq) f._fbq=n;
     n.push=n; n.loaded=!0; n.version='2.0';
     n.queue=[];
@@ -19,66 +27,83 @@
     s=b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t,s);
   }(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
 
-  (function initPixelWithAdvancedMatching(){
-    // 🔁 PARAM: PIXEL
-    var PIXEL_ID = '2707340819600297'; // [PIXEL_ID]
-
-    function getParamOrStorage(key, storageKey){
-      var params = new URLSearchParams(location.search);
-      return params.get(key) || localStorage.getItem(storageKey || key) || '';
-    }
-    function normEmail(v){ return (v||'').toString().trim().toLowerCase(); }
-    function normPhone(v){ return (v||'').toString().replace(/\D+/g,''); }
-
+  // Advanced Matching (opcional)
+  function getParamOrStorage(key, storageKey){
     try{
-      var em = normEmail(getParamOrStorage('em','am_em'));
-      var ph = normPhone(getParamOrStorage('ph','am_ph'));
+      var params = new URLSearchParams(location.search);
+      return params.get(key) || localStorage.getItem(storageKey||key) || '';
+    }catch(_){ return ''; }
+  }
+  function normEmail(v){ return (v||'').toString().trim().toLowerCase(); }
+  function normPhone(v){ return (v||'').toString().replace(/\D+/g,''); }
 
-      var advMatch = {};
-      if (em) advMatch.em = em;
-      if (ph) advMatch.ph = ph;
-
-      fbq('init', PIXEL_ID, advMatch);
-      fbq('set', 'autoConfig', false, PIXEL_ID);
+  (function init(){
+    var em = normEmail(getParamOrStorage('em','am_em'));
+    var ph = normPhone(getParamOrStorage('ph','am_ph'));
+    var adv = {};
+    if (em) adv.em = em;
+    if (ph) adv.ph = ph;
+    try{
+      if (Object.keys(adv).length){ fbq('init', PIXEL_ID, adv); }
+      else { fbq('init', PIXEL_ID); }
+      fbq('set','autoConfig', false, PIXEL_ID);
+      console.debug('[Pixel] init OK no ID:', PIXEL_ID, adv);
     }catch(e){
-      fbq('init', PIXEL_ID);
-      fbq('set', 'autoConfig', false, PIXEL_ID);
+      // fallback de init puro
+      try{ fbq('init', PIXEL_ID); fbq('set','autoConfig', false, PIXEL_ID); }catch(_){}
+      console.warn('[Pixel] init com fallback no ID:', PIXEL_ID);
     }
   })();
 
-  (function sendPageViewOnce(){
-    var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
-    var isBFCache = nav && nav.type === 'back_forward';
-    var PV_KEY = 'pv_sent:' + location.pathname + ':' + (new Date()).toDateString();
+  // PageView 1x por sessão/caminho + eventID
+  (function pageviewOnce(){
+    var key = 'pv_sent:' + location.pathname + ':' + (new Date()).toDateString();
+    try{ if (sessionStorage.getItem(key)) return; }catch(_){}
 
-    function cryptoRandomId(){
-      var a = (self.crypto||{}).getRandomValues ? crypto.getRandomValues(new Uint8Array(16)) : Array.from({length:16},()=>Math.random()*256|0);
-      a[6] = (a[6] & 0x0f) | 0x40;
-      a[8] = (a[8] & 0x3f) | 0x80;
-      var h = Array.from(a, b=>('0'+b.toString(16)).slice(-2)).join('');
-      return h.slice(0,8)+'-'+h.slice(8,12)+'-'+h.slice(12,16)+'-'+h.slice(16,20)+'-'+h.slice(20);
+    function rid(){
+      var a = (crypto.getRandomValues ? crypto.getRandomValues(new Uint8Array(16)) : Array.from({length:16},()=>Math.random()*256|0));
+      if (a[0].length){ a = Array.from(a); }
+      a[6] = (a[6] & 0x0f) | 0x40; a[8] = (a[8] & 0x3f) | 0x80;
+      var h = a.map(b=>('0'+b.toString(16)).slice(-2)).join('');
+      return 'pv-' + h.slice(0,8)+'-'+h.slice(8,12)+'-'+h.slice(12,16)+'-'+h.slice(16,20)+'-'+h.slice(20);
     }
+    var eid = rid();
 
-    function firePV(){
-      if (sessionStorage.getItem(PV_KEY)) return;
-      sessionStorage.setItem(PV_KEY, '1');
-      try {
-        // ✅ CORREÇÃO: eventID no 4º argumento
-        fbq('track','PageView', {}, { eventID: 'pv-' + cryptoRandomId() });
-      } catch(e){}
+    function mark(){ try{ sessionStorage.setItem(key,'1'); }catch(_){} }
+
+    function fire(){
+      try{
+        fbq('track','PageView', {}, { eventID: eid });
+        console.debug('[Pixel] PageView enviado | eventID=', eid);
+        mark();
+      }catch(e){
+        console.warn('[Pixel] fbq falhou, usando fallback IMG');
+        var img = new Image();
+        img.src = 'https://www.facebook.com/tr?id=' + encodeURIComponent(PIXEL_ID)
+                + '&ev=PageView&noscript=1'
+                + '&cd[eventID]=' + encodeURIComponent(eid);
+        mark();
+      }
     }
 
     if (document.prerendering) {
-      document.addEventListener('prerenderingchange', function(){
-        if (!isBFCache) firePV();
-      }, { once:true });
+      document.addEventListener('prerenderingchange', fire, { once:true });
     } else {
-      if (!isBFCache) firePV();
+      (window.requestIdleCallback || setTimeout)(fire, 60);
     }
   })();
-  </script>
-  <!-- End Meta Pixel -->
 
+  // Exponha o ID sanitizado no console p/ validar
+  console.debug('[Pixel] RAW:', RAW_PIXEL_ID, '| Sanitizado:', PIXEL_ID);
+})();
+</script>
+<noscript>
+  <!-- ⚠️ Use o MESMO ID sanitizado aqui -->
+  <img height="1" width="1" style="display:none"
+       src="https://www.facebook.com/tr?id=2707340819600297&ev=PageView&noscript=1"/>
+</noscript>
+<!-- End Meta Pixel -->
+  
   <style>
     :root{
       /* 🔁 PARAMS DE CORES (troque por cliente) */
