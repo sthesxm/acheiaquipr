@@ -376,7 +376,7 @@
     <button id="ctaFooter" class="sticky-btn" type="button">Entrar no grupo</button>
   </div>
 
-  <!-- Script principal (UI + Lead dedupe + navegação) -->
+  <!-- Script principal (UI + Lead SEM lock + navegação) -->
   <script>
     function uuidv4(){
       return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
@@ -421,7 +421,7 @@
       }
       function scheduleMidnightReset(){
         const now = new Date();
-        const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+               const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
         const msToMidnight = nextMidnight.getTime() - now.getTime();
         setTimeout(() => {
           resetVacancies();
@@ -477,49 +477,30 @@
       },{threshold:0.12});
       document.querySelectorAll('.benefit').forEach(b=> io.observe(b));
 
-      /* ===== CLICK → LEAD (ANTI-DUP) ===== */
-      const LEAD_LOCK_KEY = 'lead_lock_until';
-      let leadFiredFlag = false;
-      function canFireLead(){
-        const now = Date.now();
-        const lockUntil = parseInt(sessionStorage.getItem(LEAD_LOCK_KEY) || '0', 10);
-        return (!leadFiredFlag) && (now > lockUntil);
-      }
-      function setLeadLock(ms=30000){
-        sessionStorage.setItem(LEAD_LOCK_KEY, String(Date.now() + ms));
-      }
-
-      // ⬇️ AQUI A TROCA PARA EVENTO PADRÃO "Lead" + eventID
-      function trackLeadOnce(){
-        if (!canFireLead()) return null;
-        leadFiredFlag = true;
-        setLeadLock(30000);
+      /* ===== CLIQUE → LEAD (SEM lock; dispara sempre) ===== */
+      function sendLead(){
         const eventId = 'lead-' + uuidv4();
-
         try {
-          // Evento padrão reconhecido pelo Meta
           fbq('track','Lead', {}, { eventID: eventId });
-          // Disponibiliza o eventID caso você envie S2S
           window.__LAST_LEAD_EVENT_ID__ = eventId;
           sessionStorage.setItem('last_lead_event_id', eventId);
           console.debug('[Pixel] Lead enviado | eventID=', eventId);
         } catch(e){
           console.warn('[Pixel] falha ao enviar Lead', e);
         }
-        return eventId;
       }
 
-      // Redireciona direto para o link (evento no clique) — micro-delay
+      // Redireciona com micro-delay para garantir envio do evento
       function openWhatsAppSmart(){
-        trackLeadOnce();
+        sendLead(); // dispara a cada clique (principal e rodapé)
         setTimeout(function(){
           window.location.assign(WHATS_LINK);
-        }, 180); // ~180ms dá tempo do Pixel enviar o evento
+        }, 180);
       }
 
       function handleClick(e){
         const btn = e.currentTarget;
-        if (btn.dataset.clicked === '1') return;
+        if (btn.dataset.clicked === '1') return; // só evita spam visual do estado "loading"
         btn.dataset.clicked = '1';
 
         btn.classList.add('loading');
