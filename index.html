@@ -488,15 +488,24 @@
       function setLeadLock(ms=30000){
         sessionStorage.setItem(LEAD_LOCK_KEY, String(Date.now() + ms));
       }
+
+      // ⬇️ AQUI A TROCA PARA EVENTO PADRÃO "Lead" + eventID
       function trackLeadOnce(){
         if (!canFireLead()) return null;
         leadFiredFlag = true;
         setLeadLock(30000);
         const eventId = 'lead-' + uuidv4();
+
         try {
-          // ✅ TROCA: em vez de 'Lead' (duplicava com o servidor), usamos custom:
-          fbq('trackCustom','LeadClick', {});
-        } catch(e){}
+          // Evento padrão reconhecido pelo Meta
+          fbq('track','Lead', {}, { eventID: eventId });
+          // Disponibiliza o eventID caso você envie S2S
+          window.__LAST_LEAD_EVENT_ID__ = eventId;
+          sessionStorage.setItem('last_lead_event_id', eventId);
+          console.debug('[Pixel] Lead enviado | eventID=', eventId);
+        } catch(e){
+          console.warn('[Pixel] falha ao enviar Lead', e);
+        }
         return eventId;
       }
 
