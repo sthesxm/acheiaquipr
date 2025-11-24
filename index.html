@@ -70,6 +70,13 @@
 
       fbq('set','autoConfig', false, PIXEL_ID);
       console.debug('[Pixel] init OK no ID:', PIXEL_ID, adv);
+
+      // ✅ Garantia de PageView imediato pós-init
+      try {
+        fbq('track', 'PageView');
+        console.debug('[Pixel] PageView imediato pós-init enviado');
+      } catch(_){}
+
     }catch(e){
       // fallback de init puro
       try{ fbq('init', PIXEL_ID); fbq('set','autoConfig', false, PIXEL_ID); }catch(_){}
