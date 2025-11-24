@@ -27,25 +27,47 @@
     s=b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t,s);
   }(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
 
-  // Advanced Matching (opcional)
+  // Advanced Matching (manual + “automática” via persistência)
   function getParamOrStorage(key, storageKey){
     try{
       var params = new URLSearchParams(location.search);
       return params.get(key) || localStorage.getItem(storageKey||key) || '';
     }catch(_){ return ''; }
   }
+  function getParam(key){
+    try{
+      var params = new URLSearchParams(location.search);
+      return params.get(key) || '';
+    }catch(_){ return ''; }
+  }
   function normEmail(v){ return (v||'').toString().trim().toLowerCase(); }
   function normPhone(v){ return (v||'').toString().replace(/\D+/g,''); }
 
   (function init(){
+    // pega do URL OU storage
     var em = normEmail(getParamOrStorage('em','am_em'));
     var ph = normPhone(getParamOrStorage('ph','am_ph'));
-    var adv = {};
-    if (em) adv.em = em;
-    if (ph) adv.ph = ph;
+
+    // ✅ correspondência avançada “automática”:
+    // se vier no URL, salva para uso nas próximas visitas/páginas
     try{
+      var emUrl = normEmail(getParam('em'));
+      var phUrl = normPhone(getParam('ph'));
+      if (emUrl) localStorage.setItem('am_em', emUrl);
+      if (phUrl) localStorage.setItem('am_ph', phUrl);
+      if (!em && emUrl) em = emUrl;
+      if (!ph && phUrl) ph = phUrl;
+    }catch(_){}
+
+    var adv = {};
+    if (em) adv.em = em;   // o pixel faz hash SHA-256 automaticamente
+    if (ph) adv.ph = ph;
+
+    try{
+      // ✅ Manual Advanced Matching no init (conforme Etapa 2)
       if (Object.keys(adv).length){ fbq('init', PIXEL_ID, adv); }
       else { fbq('init', PIXEL_ID); }
+
       fbq('set','autoConfig', false, PIXEL_ID);
       console.debug('[Pixel] init OK no ID:', PIXEL_ID, adv);
     }catch(e){
@@ -55,7 +77,7 @@
     }
   })();
 
-  // PageView 1x por sessão/caminho + eventID
+  // PageView 1x por sessão/caminho + eventID (mais robusto)
   (function pageviewOnce(){
     var key = 'pv_sent:' + location.pathname + ':' + (new Date()).toDateString();
     try{ if (sessionStorage.getItem(key)) return; }catch(_){}
@@ -73,8 +95,12 @@
 
     function fire(){
       try{
-        fbq('track','PageView', {}, { eventID: eid });
-        console.debug('[Pixel] PageView enviado | eventID=', eid);
+        if (typeof fbq === 'function') {
+          fbq('track','PageView', {}, { eventID: eid });
+          console.debug('[Pixel] PageView enviado | eventID=', eid);
+        } else {
+          throw new Error('fbq indisponível');
+        }
         mark();
       }catch(e){
         console.warn('[Pixel] fbq falhou, usando fallback IMG');
@@ -86,10 +112,11 @@
       }
     }
 
-    if (document.prerendering) {
-      document.addEventListener('prerenderingchange', fire, { once:true });
+    // dispara assim que possível (sem depender de prerender/idle)
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', fire, { once:true });
     } else {
-      (window.requestIdleCallback || setTimeout)(fire, 60);
+      fire();
     }
   })();
 
@@ -100,7 +127,7 @@
 <noscript>
   <!-- ⚠️ Use o MESMO ID sanitizado aqui -->
   <img height="1" width="1" style="display:none"
-       src="https://www.facebook.com/tr?id=2707340819600297&ev=PageView&noscript=1"/>
+       src="https://www.facebook.com/tr?id=734806152953802&ev=PageView&noscript=1"/>
 </noscript>
 <!-- End Meta Pixel -->
   
